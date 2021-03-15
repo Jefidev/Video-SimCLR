@@ -2,7 +2,7 @@ import argparse
 from pytorch_metric_learning.losses import NTXentLoss
 import torch
 
-from models.pytorch_i3d import InceptionI3d
+from models.pytorch_i3d_checkpointed import InceptionI3d
 from datasets.simclr_video_loader import SimCLRLoader
 from models.simclr import SimCLR
 from modules.lars import LARS
@@ -31,10 +31,10 @@ print(device)
 KINETIC_PATH = "./checkpoints/rgb_imagenet.pt"
 PREFIX = "/run/media/jeromefink/2.0 TB Hard/RAW-LSFB/videos"
 
-batch_size = 3
-cumulation = 685  # accum gradient
+batch_size = 12
+cumulation = 170  # accum gradient
 nbr_frames = 48
-nb_workers = 4
+nb_workers = 2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-i", "--input", help="Path to the input video directory")
@@ -42,7 +42,7 @@ parser.add_argument("-i", "--input", help="Path to the input video directory")
 parser.add_argument("-l", "--load", help="Indicate to load model weight")
 parser.add_argument("-p", "--projection", help="Projection dimension of the projection head", type=int)
 parser.add_argument("-f", "--features", help="Number of features of the last layer of the encoder", type=int)
-parser.add_argument("-a", "--all", action="store_true", help="If present tells the program to load the whole simclr model from saved file", type=bool)
+parser.add_argument("-a", "--all", action="store_true", help="If present tells the program to load the whole simclr model from saved file")
 
 args = parser.parse_args()
 
@@ -121,7 +121,6 @@ else:
 
 model.to(device)
 
-
 # Loss function
 criterion = NTXentLoss(temperature=0.10)
 
@@ -160,6 +159,8 @@ with mlflow.start_run(run_name="SimCLR test") as run:
 
             xi = xi.type(torch.FloatTensor).to(device)
             xj = xj.type(torch.FloatTensor).to(device)
+            xi.requires_grad = True
+            xj.requires_grad = True
 
             zi, zj = model(xi, xj)
 

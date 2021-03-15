@@ -1,5 +1,9 @@
 import torch
 import torch.nn as nn
+import torch.utils.checkpoint as checkpoint
+
+# Should add checkpoint to ease the trainint
+# https://github.com/prigoyal/pytorch_memonger/blob/master/tutorial/Checkpointing_for_PyTorch_models.ipynb
 
 class SimCLR(nn.Module):
     def __init__(self, encoder, projection_dim, n_features):
